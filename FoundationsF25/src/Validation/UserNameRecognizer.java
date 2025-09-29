@@ -110,9 +110,10 @@ public class UserNameRecognizer {
 				// The current character is checked against A-Z, a-z, 0-9. If any are matched
 				// the FSM goes to state 1
 				
-				// A-Z or a-z-> State 1
+				// A-Z, a-z, _-> State 1
 				if ((currentChar >= 'A' && currentChar <= 'Z' ) ||		// Check for A-Z
-						(currentChar >= 'a' && currentChar <= 'z' )) {	// Check for a-z
+						(currentChar >= 'a' && currentChar <= 'z' ) ||  // Check for a-z
+						(currentChar == '_') || (currentChar >= '0' && currentChar <= '9' )) {	// Check for _
 			
 					nextState = 1;
 					
@@ -137,53 +138,25 @@ public class UserNameRecognizer {
 				
 				// A-Z, a-z, 0-9 -> State 1
 				if ((currentChar >= 'A' && currentChar <= 'Z' ) ||		// Check for A-Z
-						(currentChar >= 'a' && currentChar <= 'z' ) ||	// Check for a-z
-						(currentChar >= '0' && currentChar <= '9' )) {	// Check for 0-9
+						(currentChar >= 'a' && currentChar <= 'z' ) ||  // Check for a-z
+						(currentChar == '_') || (currentChar >= '0' && currentChar <= '9' ))  {	// Check for 0-9
 					nextState = 1;
 					
 					// Count the character
 					userNameSize++;
 				}
-				// . -> State 2
-				else if ((currentChar == '.') || (currentChar == '-') || (currentChar == '_')) {							// Check for /
-					nextState = 2;
-					
-					// Count the ., -, or _
-					userNameSize++;
-				}				
+			
+				
 				// If it is none of those characters, the FSM halts
 				else
 					running = false;
 				
 				// The execution of this state is finished
-				// If the size is larger than 16, the loop must stop
-				if (userNameSize > 16)
+				// If the size is larger than 20, the loop must stop
+				if (userNameSize > 20)
 					running = false;
 				break;			
-				
-			case 2: 
-				// State 2 deals with a character after a period in the name.
-				
-				// A-Z, a-z, 0-9 -> State 1
-				if ((currentChar >= 'A' && currentChar <= 'Z' ) ||		// Check for A-Z
-						(currentChar >= 'a' && currentChar <= 'z' ) ||	// Check for a-z
-						(currentChar >= '0' && currentChar <= '9' )) {	// Check for 0-9
-					nextState = 1;
-					
-					// Count the odd digit
-					userNameSize++;
-					
-				}
-				// If it is none of those characters, the FSM halts
-				else 
-					running = false;
-
-				// The execution of this state is finished
-				// If the size is larger than 16, the loop must stop
-				if (userNameSize > 16)
-					running = false;
-				break;			
-			}
+			}	
 			
 			if (running) {
 				displayDebuggingInfo();
@@ -203,7 +176,7 @@ public class UserNameRecognizer {
 				nextState = -1;
 			}
 			// Should the FSM get here, the loop starts again
-	
+			
 		}
 		displayDebuggingInfo();
 		
@@ -228,21 +201,21 @@ public class UserNameRecognizer {
 			// State 1 is a final state.  Check to see if the UserName length is valid.  If so we
 			// we must ensure the whole string has been consumed.
 
-			if (userNameSize < 4) {
+			if (userNameSize < 5) {
 				// UserName is too small
-				userNameRecognizerErrorMessage += "A UserName must have at least 4 characters.\n";
+				userNameRecognizerErrorMessage += "A UserName must have at least 5 characters.\n";
 				return userNameRecognizerErrorMessage;
 			}
-			else if (userNameSize > 16) {
+			else if (userNameSize > 20) {
 				// UserName is too long
 				userNameRecognizerErrorMessage += 
-					"A UserName must have no more than 16 characters.\n";
+					"A UserName must have no more than 20 characters.\n";
 				return userNameRecognizerErrorMessage;
 			}
 			else if (currentCharNdx < input.length()) {
 				// There are characters remaining in the input, so the input is not valid
 				userNameRecognizerErrorMessage += 
-					"A UserName character may only contain the characters A-Z, a-z, or 0-9.\n";
+					"A UserName character may only contain the characters A-Z, a-z, 0-9, or _.\n";
 				return userNameRecognizerErrorMessage;
 			}
 			else {
@@ -251,17 +224,12 @@ public class UserNameRecognizer {
 					userNameRecognizerErrorMessage = "";
 					return userNameRecognizerErrorMessage;
 			}
-
-		case 2:
-			// State 2 is not a final state, so we can return a very specific error message
-			userNameRecognizerErrorMessage +=
-				"A UserName character after a period, minus sign, or underscore must be A-Z, a-z, 0-9.\n";
-			return userNameRecognizerErrorMessage;
 			
 		default:
 			// This is for the case where we have a state that is outside of the valid range.
 			// This should not happen
 			return "";
 		}
+	
 	}
 }
