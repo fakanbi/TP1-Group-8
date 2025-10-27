@@ -194,7 +194,7 @@ public class UserNameRecognizer {
 		switch (state) {
 		case 0:
 			// State 0 is not a final state, so we can return a very specific error message
-			userNameRecognizerErrorMessage += "A UserName must start with A-Z or a-z\n";
+			userNameRecognizerErrorMessage += "A UserName must start with A-Z, a-z, 0-9, or _.\n";
 			return userNameRecognizerErrorMessage;
 
 		case 1:

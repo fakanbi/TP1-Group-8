@@ -6,6 +6,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Font;
@@ -53,13 +54,15 @@ public class ViewFirstAdmin {
 			new Label(" You are the first user.  You must be an administrator.");
 	
 	private static Label label_TitleLine2 = 
-			new Label("Enter the Admin's Username, the Password twice, and then click on " + 
-					"Setup Admin Account.");
+			new Label("Enter the Admin's Username, the Password twice, Date of Birth, Phone Number " + "\n" + 
+					"and then click on Setup Admin Account." + "\n" );
 	
 	protected static Label label_PasswordsDoNotMatch = new Label();
 	protected static TextField text_AdminUsername = new TextField();
 	protected static PasswordField text_AdminPassword1 = new PasswordField();
 	protected static PasswordField text_AdminPassword2 = new PasswordField();
+	protected static TextField text_PhoneNumber = new TextField();
+	protected static DatePicker datePicker_DOB = new DatePicker();
 	private static Button button_AdminSetup = new Button("Setup Admin Account");
 
 	// This alert is used should the user enter two passwords that do not match
@@ -151,7 +154,7 @@ public class ViewFirstAdmin {
 		setupLabelUI(label_TitleLine1, "Arial", 24, width, Pos.CENTER, 0, 70);
 
 		// Label to display the welcome message for the first user
-		setupLabelUI(label_TitleLine2, "Arial", 18, width, Pos.CENTER, 0, 130);
+		setupLabelUI(label_TitleLine2, "Arial", 18, width, Pos.CENTER, 0, 100);
 
 		// Establish the text input operand field for the Admin username
 		setupTextUI(text_AdminUsername, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 160, 
@@ -174,8 +177,21 @@ public class ViewFirstAdmin {
 		text_AdminPassword2.textProperty().addListener((observable, oldValue, newValue) 
 				-> {ControllerFirstAdmin.setAdminPassword2(); });
 
+		// Establish the date picker for the date of birth
+		setupDatePickerUI(datePicker_DOB, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 310);
+		datePicker_DOB.setPromptText("Select Date of Birth");
+		datePicker_DOB.valueProperty().addListener((observable, oldValue, newValue) 
+				-> {ControllerFirstAdmin.setAdminDOB(); });
+
+		// Establish the text input operand field for the phone number
+		setupTextUI(text_PhoneNumber, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 360, 
+				true);
+		text_PhoneNumber.setPromptText("Enter Phone Number (optional)");
+		text_PhoneNumber.textProperty().addListener((observable, oldValue, newValue) 
+				-> {ControllerFirstAdmin.setAdminPhoneNumber(); });
+
 		// Set up the Log In button
-		setupButtonUI(button_AdminSetup, "Dialog", 18, 200, Pos.CENTER, 475, 210);
+		setupButtonUI(button_AdminSetup, "Dialog", 18, 200, Pos.CENTER, 475, 260);
 		button_AdminSetup.setOnAction((event) -> {
 			ControllerFirstAdmin.doSetupAdmin(theStage,1); 
 			});
@@ -189,7 +205,7 @@ public class ViewFirstAdmin {
 		// Place all of the just-initialized GUI elements into the pane
 		theRootPane.getChildren().addAll(label_ApplicationTitle, label_TitleLine1,
 				label_TitleLine2, text_AdminUsername, text_AdminPassword1, 
-				text_AdminPassword2, button_AdminSetup, label_PasswordsDoNotMatch,
+				text_AdminPassword2, datePicker_DOB, text_PhoneNumber, button_AdminSetup, label_PasswordsDoNotMatch,
 				button_Quit);
 	}
 	
@@ -263,4 +279,23 @@ public class ViewFirstAdmin {
 		t.setLayoutY(y);		
 		t.setEditable(e);
 	}	
+	
+	/**********
+	 * Private local method to initialize the standard fields for a date picker
+	 * 
+	 * @param dp	The DatePicker object to be initialized
+	 * @param ff	The font to be used
+	 * @param f		The size of the font to be used
+	 * @param w		The width of the DatePicker
+	 * @param p		The alignment (e.g. left, centered, or right)
+	 * @param x		The location from the left edge (x axis)
+	 * @param y		The location from the top (y axis)
+	 */
+	private void setupDatePickerUI(DatePicker dp, String ff, double f, double w, Pos p, double x, double y){
+	    dp.setStyle("-fx-font-family: " + ff + "; -fx-font-size: " + f + "px;");
+	    dp.setMinWidth(w);
+	    dp.setMaxWidth(w);
+	    dp.setLayoutX(x);
+	    dp.setLayoutY(y);		
+	}
 }

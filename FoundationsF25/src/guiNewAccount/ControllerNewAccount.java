@@ -4,10 +4,13 @@ import java.sql.SQLException;
 
 import database.Database;
 import entityClasses.User;
+import guiFirstAdmin.ViewFirstAdmin;
 import guiNewAccount.ModelNewAccount;
+import guiFirstAdmin.ControllerFirstAdmin;
 import Validation.UserNameRecognizer;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import java.time.LocalDate;
 
 public class ControllerNewAccount {
 	
@@ -36,13 +39,17 @@ public class ControllerNewAccount {
 	 * passing that information as parameters.
 	 * 
 	 */	
+	
+	// Fetch the username and password. (We use the first of the two here, but we will validate
+	// that the two password fields are the same before we do anything with it.)
+	protected static String username = ViewNewAccount.text_Username.getText();
+	protected static String password = ViewNewAccount.text_Password1.getText();
+	protected static String phoneNumber = ViewNewAccount.text_PhoneNumber.getText();
+	protected static String dateOfBirth = ""; 
+    
+    
 	protected static void doCreateUser() {
-		
-		// Fetch the username and password. (We use the first of the two here, but we will validate
-		// that the two password fields are the same before we do anything with it.)
-		String username = ViewNewAccount.text_Username.getText();
-		String password = ViewNewAccount.text_Password1.getText();
-		
+
 		// Checking if password is empty and passing an error if it is.
 		if(password.isEmpty()) {
 			ControllerNewAccount.alertUsernamePasswordError.setTitle("Invalid Password!");
@@ -66,6 +73,14 @@ public class ControllerNewAccount {
             ViewNewAccount.text_Username.setText("");
             return;
 		}  
+		
+        if (phoneNumber != null && !phoneNumber.trim().isEmpty() && !validatePhoneNumber(phoneNumber)) {
+            ControllerNewAccount.alertUsernamePasswordError.setTitle("Invalid Phone Number Format!");
+            ControllerNewAccount.alertUsernamePasswordError.setHeaderText(null);
+            ControllerNewAccount.alertUsernamePasswordError.setContentText("Phone number must be in the format: xxx-xxx-xxxx\nExample: 123-456-7890\nOr leave the field empty.");
+            ControllerNewAccount.alertUsernamePasswordError.showAndWait();
+            return;
+        }
         
         // Validating the password and sending helpful errors. To do this it reads the error message passed 
 		// by the Model function evaluatePassword and passes the error message as an alert to the user.
@@ -102,6 +117,36 @@ public class ControllerNewAccount {
             ViewNewAccount.text_Password2.setText("");
             return;
         }
+        
+        // Validate date of birth
+        if (dateOfBirth == null || dateOfBirth.trim().isEmpty()) {
+            ControllerNewAccount.alertUsernamePasswordError.setTitle("Date of Birth Required!");
+            ControllerNewAccount.alertUsernamePasswordError.setHeaderText(null);
+            ControllerNewAccount.alertUsernamePasswordError.setContentText("Please select your date of birth.");
+            ControllerNewAccount.alertUsernamePasswordError.showAndWait();
+            return;
+        }
+
+        // Convert to LocalDate and validate age
+        try {
+            LocalDate dob = LocalDate.parse(dateOfBirth);
+            LocalDate today = LocalDate.now();
+            LocalDate minAgeDate = today.minusYears(13);
+            
+            if (dob.isAfter(minAgeDate)) {
+                ControllerNewAccount.alertUsernamePasswordError.setTitle("Age Restriction!");
+                ControllerNewAccount.alertUsernamePasswordError.setHeaderText(null);
+                ControllerNewAccount.alertUsernamePasswordError.setContentText("You must be at least 13 years old to create an account.");
+                ControllerNewAccount.alertUsernamePasswordError.showAndWait();
+                return;
+            }
+        } catch (Exception e) {
+            ControllerNewAccount.alertUsernamePasswordError.setTitle("Invalid Date!");
+            ControllerNewAccount.alertUsernamePasswordError.setHeaderText(null);
+            ControllerNewAccount.alertUsernamePasswordError.setContentText("Please select a valid date of birth.");
+            ControllerNewAccount.alertUsernamePasswordError.showAndWait();
+            return;
+        }
 		
 		// Display key information to the log
 		System.out.println("** Account for Username: " + username + "; theInvitationCode: "+
@@ -116,22 +161,32 @@ public class ControllerNewAccount {
 		if (ViewNewAccount.text_Password1.getText().
 				compareTo(ViewNewAccount.text_Password2.getText()) == 0) {
 			
+			if (theDatabase.doesUserExist(username)) {
+		        Alert usernameExistsAlert = new Alert(AlertType.ERROR);
+		        usernameExistsAlert.setTitle("Username Already Exists");
+		        usernameExistsAlert.setHeaderText(null);
+		        usernameExistsAlert.setContentText("The username '" + username + "' is already taken. Please choose a different username.");
+		        usernameExistsAlert.showAndWait();
+		        ViewNewAccount.text_Username.setText(""); // Clear the username field
+		        return; // Stop the registration process
+		    }
+			
 			// The passwords match so we will set up the role and the User object base on the 
 			// information provided in the invitation
-			if (ViewNewAccount.theRole.compareTo("Admin") == 0) {
-				roleCode = 1;
-				user = new User(username, password, "", "", "", "", "", true, false, false);
-			} else if (ViewNewAccount.theRole.compareTo("Role1") == 0) {
-				roleCode = 2;
-				user = new User(username, password, "", "", "", "", "", false, true, false);
-			} else if (ViewNewAccount.theRole.compareTo("Role2") == 0) {
-				roleCode = 3;
-				user = new User(username, password, "", "", "", "", "", false, false, true);
-			} else {
-				System.out.println(
-						"**** Trying to create a New Account for a role that does not exist!");
-				System.exit(0);
-			}
+			 if (ViewNewAccount.theRole.compareTo("Admin") == 0) {
+		            roleCode = 1;
+		            user = new User(username, password, "", "", "", "", "", dateOfBirth, phoneNumber, true, false, false);
+		        } else if (ViewNewAccount.theRole.compareTo("Role1") == 0) {
+		            roleCode = 2;
+		            user = new User(username, password, "", "", "", "", "", dateOfBirth, phoneNumber, false, true, false);
+		        } else if (ViewNewAccount.theRole.compareTo("Role2") == 0) {
+		            roleCode = 3;
+		            user = new User(username, password, "", "", "", "", "", dateOfBirth, phoneNumber, false, false, true);
+		        } else {
+		            System.out.println(
+		                    "**** Trying to create a New Account for a role that does not exist!");
+		            System.exit(0);
+		        }
 			
 			// Unlike the FirstAdmin, we know the email address, so set that into the user as well.
         	user.setEmailAddress(ViewNewAccount.emailAddress);
@@ -168,6 +223,54 @@ public class ControllerNewAccount {
 		}
 	}
 
+	/**********
+	 * <p> Method: setAdminDOB() </p>
+	 * 
+	 * <p> Description: This method is called when the user adds a date to the date of birth field in
+	 * the View.  A private local copy of what was last entered is kept here.</p>
+	 * 
+	 */
+	// Sets the admins date of birth
+	protected static void setAdminDOB() {
+	    LocalDate date = ViewNewAccount.text_DateOfBirth.getValue();
+	    if (date != null) {
+	    	dateOfBirth = date.toString();
+	    }
+	    else {
+	    	dateOfBirth = "";
+	    }
+	}
+	/**********
+	 * <p> Method: setAdminPhoneNumber() </p>
+	 * 
+	 * <p> Description: This method is called when the user adds a phone number to the phone number field in
+	 * the View.  A private local copy of what was last entered is kept here.</p>
+	 * 
+	 */
+	// sets the admin phone number
+	protected static void setAdminPhoneNumber() {
+	    phoneNumber = ViewNewAccount.text_PhoneNumber.getText();
+	}
+	
+	/**********
+	 * <p> Method: validatePhoneNumber() </p>
+	 * 
+	 * <p> Description: This method validates that the phone number is in the format xxx-xxx-xxxx
+	 * where x represents a digit from 0-9. If no phone number is provided, it returns true.</p>
+	 * 
+	 * @param phoneNumber The phone number string to validate
+	 * @return boolean true if valid format or empty, false otherwise
+	 */
+	// Method to validate the phone number
+	protected static boolean validatePhoneNumber(String phoneNumber) {
+	    if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+	        return true; // Phone number is optional, so empty is valid
+	    }
+	    
+	    // Regular expression for xxx-xxx-xxxx format
+	    String phoneRegex = "^\\d{3}-\\d{3}-\\d{4}$";
+	    return phoneNumber.matches(phoneRegex);
+	}
 	
 	/**********
 	 * <p> Method: public performQuit() </p>

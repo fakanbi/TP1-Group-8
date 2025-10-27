@@ -3,6 +3,24 @@ package guiAdminHome;
 import database.Database;
 import Validation.EmailAddressRecognizer;
 
+import javafx.stage.Window;
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import guiAdminHome.ManageInvitationDialog;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ChoiceDialog;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import guiAdminHome.ViewUserList;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import entityClasses.User;
+
+
+
 /*******
  * <p> Title: GUIAdminHomePage Class. </p>
  * 
@@ -90,11 +108,10 @@ public class ControllerAdminHome {
 	 * this function has not yet been implemented. </p>
 	 */
 	protected static void manageInvitations () {
-		System.out.println("\n*** WARNING ***: Manage Invitations Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.setTitle("*** WARNING ***");
-		ViewAdminHome.alertNotImplemented.setHeaderText("Manage Invitations Issue");
-		ViewAdminHome.alertNotImplemented.setContentText("Manage Invitations Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.showAndWait();
+		Window owner = ViewAdminHome.theStage;
+		 database.Database db = applicationMain.FoundationsMain.database;
+		 Connection conn = db.getConnection();
+		 new ManageInvitationDialog(owner, conn).showAndWait();
 	}
 	
 	/**********
@@ -105,12 +122,75 @@ public class ControllerAdminHome {
 	 * <p> Description: Protected method that is currently a stub informing the user that
 	 * this function has not yet been implemented. </p>
 	 */
-	protected static void setOnetimePassword () {
-		System.out.println("\n*** WARNING ***: One-Time Password Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.setTitle("*** WARNING ***");
-		ViewAdminHome.alertNotImplemented.setHeaderText("One-Time Password Issue");
-		ViewAdminHome.alertNotImplemented.setContentText("One-Time Password Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.showAndWait();
+	protected static void setOnetimePassword() {
+	    List<String> userList = theDatabase.getUserList();
+	    if (userList == null || userList.size() <= 1) { 
+	        ViewAdminHome.alertNotImplemented.setTitle("No Users Found");
+	        ViewAdminHome.alertNotImplemented.setContentText("There are no users in the system.");
+	        ViewAdminHome.alertNotImplemented.showAndWait();
+	        return;
+	    }
+	    
+	    List<String> usernames = new ArrayList<>(userList);
+	    usernames.remove("<Select a User>");
+	    
+	    ChoiceDialog<String> userDialog = new ChoiceDialog<>(usernames.get(0), usernames);
+	    userDialog.setTitle("Set One-Time Password");
+	    userDialog.setHeaderText("Select User");
+	    userDialog.setContentText("Choose a user to set one-time password:");
+	    
+	    Optional<String> userResult = userDialog.showAndWait();
+	    if (userResult.isPresent()) {
+	        String selectedUsername = userResult.get();
+	        
+	        String oneTimePassword = generateOneTimePassword();
+	        
+	        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
+	        confirmDialog.setTitle("Confirm One-Time Password");
+	        confirmDialog.setHeaderText("One-Time Password Generated");
+	        confirmDialog.setContentText("One-time password for " + selectedUsername + ": " + oneTimePassword + 
+	                "\n\nThis password will expire after the first use.\nDo you want to continue?");
+	        
+	        Optional<ButtonType> confirmResult = confirmDialog.showAndWait();
+	        if (confirmResult.isPresent() && confirmResult.get() == ButtonType.OK) {
+	            try {
+	                // Update the user's password in the database
+	                if (theDatabase.setUserOneTimePassword(selectedUsername, oneTimePassword)) {
+	                    Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+	                    successAlert.setTitle("Success");
+	                    successAlert.setHeaderText(null);
+	                    successAlert.setContentText("One-time password has been set for " + selectedUsername + 
+	                            ".\nThe user must change their password on next login.");
+	                    successAlert.showAndWait();
+	                } else {
+	                    Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+	                    errorAlert.setTitle("Error");
+	                    errorAlert.setHeaderText(null);
+	                    errorAlert.setContentText("Failed to set one-time password for " + selectedUsername);
+	                    errorAlert.showAndWait();
+	                }
+	            } catch (SQLException e) {
+	                System.err.println("*** ERROR *** Database error in setOnetimePassword: " + e.getMessage());
+	                e.printStackTrace();
+	                
+	                Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+	                errorAlert.setTitle("Database Error");
+	                errorAlert.setHeaderText(null);
+	                errorAlert.setContentText("An error occurred while accessing the database.");
+	                errorAlert.showAndWait();
+	            }
+	        }
+	    }
+	}
+
+	private static String generateOneTimePassword() {
+	    String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
+	    StringBuilder password = new StringBuilder();
+	    for (int i = 0; i < 8; i++) {
+	        int index = (int) (Math.random() * chars.length());
+	        password.append(chars.charAt(index));
+	    }
+	    return password.toString();
 	}
 	
 	/**********
@@ -122,11 +202,79 @@ public class ControllerAdminHome {
 	 * this function has not yet been implemented. </p>
 	 */
 	protected static void deleteUser() {
-		System.out.println("\n*** WARNING ***: Delete User Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.setTitle("*** WARNING ***");
-		ViewAdminHome.alertNotImplemented.setHeaderText("Delete User Issue");
-		ViewAdminHome.alertNotImplemented.setContentText("Delete User Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.showAndWait();
+	    try {
+	        // Get list of all users from the database
+	        List<User> users = theDatabase.getAllUsers();
+	        
+	        // Find the current admin and remove it from the list of users to delete
+	        List<User> filteredUsers = new ArrayList<>();
+	        String currentUsername = ViewAdminHome.theUser.getUserName();
+	        
+	        for (User user : users) {
+	            if (!user.getUserName().equals(currentUsername)) {
+	                filteredUsers.add(user);
+	            }
+	        }
+	        
+	        if (filteredUsers.isEmpty()) {
+	            Alert noUsersAlert = new Alert(AlertType.INFORMATION);
+	            noUsersAlert.setTitle("No Users Found");
+	            noUsersAlert.setContentText("There are no other users in the system to delete.");
+	            noUsersAlert.showAndWait();
+	            return;
+	        }
+	        
+	        // Create a list of usernames to be selected
+	        List<String> usernames = new ArrayList<>();
+	        for (User user : filteredUsers) {
+	            usernames.add(user.getUserName());
+	        }
+	        
+	        // Showing which users can be deleted
+	        ChoiceDialog<String> userDialog = new ChoiceDialog<>(usernames.get(0), usernames);
+	        userDialog.setTitle("Delete User");
+	        userDialog.setContentText("Choose a user to delete from the system:");
+	        
+	        Optional<String> userResult = userDialog.showAndWait();
+	        if (userResult.isPresent()) {
+	            String selectedUserInfo = userResult.get();
+	            String selectedUsername = userResult.get();
+	            
+	            // Confirming the deletion of a user
+	            Alert confirmDialog = new Alert(AlertType.CONFIRMATION);
+	            confirmDialog.setTitle("Confirm User Deletion");
+	            confirmDialog.setHeaderText("Delete User: " + selectedUsername);
+	            confirmDialog.setContentText("Are you sure you want to permanently delete user '" + 
+	                    selectedUsername + "'?\nThis cannot be undone.");
+	            
+	            Optional<ButtonType> confirmResult = confirmDialog.showAndWait();
+	            if (confirmResult.isPresent() && confirmResult.get() == ButtonType.OK) {
+	                // Delete the user from the database
+	                if (theDatabase.deleteUser(selectedUsername)) {
+	                    Alert successAlert = new Alert(AlertType.INFORMATION);
+	                    successAlert.setTitle("Success");
+	                    successAlert.setHeaderText(null);
+	                    successAlert.setContentText("User '" + selectedUsername + "' has been deleted.");
+	                    successAlert.showAndWait();
+	                } else {
+	                    Alert errorAlert = new Alert(AlertType.ERROR);
+	                    errorAlert.setTitle("Error");
+	                    errorAlert.setHeaderText(null);
+	                    errorAlert.setContentText("Failed to delete user '" + selectedUsername + "'.");
+	                    errorAlert.showAndWait();
+	                }
+	            }
+	        }
+	    } catch (SQLException e) {
+	        System.err.println("*** ERROR *** Database error in deleteUser: " + e.getMessage());
+	        e.printStackTrace();
+	        
+	        Alert errorAlert = new Alert(AlertType.ERROR);
+	        errorAlert.setTitle("Database Error");
+	        errorAlert.setHeaderText(null);
+	        errorAlert.setContentText("An error occurred while accessing the database.");
+	        errorAlert.showAndWait();
+	    }
 	}
 	
 	/**********
@@ -138,11 +286,7 @@ public class ControllerAdminHome {
 	 * this function has not yet been implemented. </p>
 	 */
 	protected static void listUsers() {
-		System.out.println("\n*** WARNING ***: List Users Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.setTitle("*** WARNING ***");
-		ViewAdminHome.alertNotImplemented.setHeaderText("List User Issue");
-		ViewAdminHome.alertNotImplemented.setContentText("List Users Not Yet Implemented");
-		ViewAdminHome.alertNotImplemented.showAndWait();
+		ViewUserList.displayUserList(ViewAdminHome.theStage, ViewAdminHome.theUser);
 	}
 	
 	/**********

@@ -4,6 +4,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -13,6 +14,7 @@ import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import database.Database;
 import entityClasses.User;
+import guiFirstAdmin.ControllerFirstAdmin;
 
 /*******
  * <p> Title: ViewNewAccount Class. </p>
@@ -52,6 +54,9 @@ public class ViewNewAccount {
     protected static TextField text_Username = new TextField();
     protected static PasswordField text_Password1 = new PasswordField();
     protected static PasswordField text_Password2 = new PasswordField();
+    protected static TextField text_PhoneNumber = new TextField();
+    protected static DatePicker text_DateOfBirth = new DatePicker();
+    
     protected static Button button_UserSetup = new Button("User Setup");
     protected static TextField text_Invitation = new TextField();
 
@@ -136,7 +141,8 @@ public class ViewNewAccount {
     	// Place all of the established GUI elements into the pane
     	theRootPane.getChildren().clear();
     	theRootPane.getChildren().addAll(label_NewUserCreation, label_NewUserLine, text_Username,
-    			text_Password1, text_Password2, button_UserSetup, button_Quit);    	
+    	        text_Password1, text_Password2, text_DateOfBirth, text_PhoneNumber, 
+    	        button_UserSetup, button_Quit);    	
 
 		// Set the title for the window, display the page, and wait for the Admin to do something
 		theStage.setTitle("CSE 360 Foundation Code: New User Account Setup");	
@@ -180,6 +186,18 @@ public class ViewNewAccount {
 		// Establish the text input operand field to confirm the password
 		setupTextUI(text_Password2, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 260, true);
 		text_Password2.setPromptText("Enter the Password Again");
+		
+		// Establish the date picker for the date of birth
+		setupDatePickerUI(text_DateOfBirth, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 310);
+		text_DateOfBirth.setPromptText("Select Date of Birth");
+		text_DateOfBirth.valueProperty().addListener((observable, oldValue, newValue) 
+				-> {ControllerNewAccount.setAdminDOB(); });
+
+				// Establish the text input operand field for the phone number
+		setupTextUI(text_PhoneNumber, "Arial", 18, 300, Pos.BASELINE_LEFT, 50, 360, true);
+		text_PhoneNumber.setPromptText("Enter Phone Number (optional)");
+		text_PhoneNumber.textProperty().addListener((observable, oldValue, newValue) 
+				-> {ControllerNewAccount.setAdminPhoneNumber(); });		
 		
 		// If the invitation code is wrong, this alert dialog will tell the user
 		alertInvitationCodeIsInvalid.setTitle("Invalid Invitation Code");
@@ -251,4 +269,22 @@ public class ViewNewAccount {
 		t.setLayoutY(y);		
 		t.setEditable(e);
 	}	
+	/**********
+	 * Private local method to initialize the standard fields for a date picker
+	 * 
+	 * @param dp	The DatePicker object to be initialized
+	 * @param ff	The font to be used
+	 * @param f		The size of the font to be used
+	 * @param w		The width of the DatePicker
+	 * @param p		The alignment (e.g. left, centered, or right)
+	 * @param x		The location from the left edge (x axis)
+	 * @param y		The location from the top (y axis)
+	 */
+	private void setupDatePickerUI(DatePicker dp, String ff, double f, double w, Pos p, double x, double y){
+	    dp.setStyle("-fx-font-family: " + ff + "; -fx-font-size: " + f + "px;");
+	    dp.setMinWidth(w);
+	    dp.setMaxWidth(w);
+	    dp.setLayoutX(x);
+	    dp.setLayoutY(y);		
+	}
 }

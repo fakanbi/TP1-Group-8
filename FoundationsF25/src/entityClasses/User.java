@@ -25,6 +25,8 @@ public class User {
     private String lastName;
     private String preferredFirstName;
     private String emailAddress;
+    private String dateOfBirth;
+    private String phoneNumber;
     private boolean adminRole;
     private boolean role1;
     private boolean role2;
@@ -59,7 +61,7 @@ public class User {
      */
     // Constructor to initialize a new User object with userName, password, and role.
     public User(String userName, String password, String fn, String mn, String ln, String pfn, 
-    		String ea, boolean r1, boolean r2, boolean r3) {
+    		String ea, String dob, String pn, boolean r1, boolean r2, boolean r3) {
         this.userName = userName;
         this.password = password;
         this.firstName = fn;
@@ -67,6 +69,8 @@ public class User {
         this.lastName = ln;
         this.preferredFirstName = pfn;
         this.emailAddress = ea;
+        this.dateOfBirth = dob;
+        this.phoneNumber = pn;
         this.adminRole = r1;
         this.role1 = r2;
         this.role2 = r3;
@@ -198,6 +202,28 @@ public class User {
     // Gets the current value of the Student role attribute.
     public String getEmailAddress() { return emailAddress; }
 
+    /*****
+     * <p> Method: String getDateOfBirth() </p>
+     * 
+     * <p> Description: This getter returns the DateOfBirth. </p>
+     * 
+     * @return a String of the DateOfBirth
+	 *
+     */
+    // Gets the current value of the Student role attribute.
+    public String getDateOfBirth() { return dateOfBirth; }
+    
+    /*****
+     * <p> Method: String getDateOfBirth() </p>
+     * 
+     * <p> Description: This getter returns the PhoneNumber. </p>
+     * 
+     * @return a String of the PhoneNumber
+	 *
+     */
+    // Gets the current value of the Student role attribute.
+    public String getPhoneNumber() { return phoneNumber; }
+    
     public void setUserName(String s) { userName = s; }
     public void setPassword(String s) { password = s; }
     public void setFirstName(String s) { firstName = s; }
@@ -205,6 +231,8 @@ public class User {
     public void setLastName(String s) { lastName = s; }
     public void setPreferredFirstName(String s) { preferredFirstName = s; }
     public void setEmailAddress(String s) { emailAddress = s; }
+    public void setDateOfBirth(String s) { dateOfBirth = s;}
+    public void setPhoneNumber(String s) { phoneNumber = s; }
 
     
     /*****

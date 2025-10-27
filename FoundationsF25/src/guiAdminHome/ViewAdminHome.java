@@ -20,6 +20,7 @@ import database.Database;
 import entityClasses.User;
 import guiUserUpdate.ViewUserUpdate;
 
+
 /*******
  * <p> Title: GUIAdminHomePage Class. </p>
  * 
