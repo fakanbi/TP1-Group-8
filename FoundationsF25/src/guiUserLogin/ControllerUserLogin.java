@@ -65,8 +65,9 @@ public class ControllerUserLogin {
     	User user = new User(username, password, theDatabase.getCurrentFirstName(), 
     			theDatabase.getCurrentMiddleName(), theDatabase.getCurrentLastName(), 
     			theDatabase.getCurrentPreferredFirstName(), theDatabase.getCurrentEmailAddress(), 
-    			theDatabase.getCurrentAdminRole(), 
-    			theDatabase.getCurrentNewRole1(), theDatabase.getCurrentNewRole2());
+    			theDatabase.getDateOfBirth(), theDatabase.getPhoneNumber(),
+    			theDatabase.getCurrentAdminRole(), theDatabase.getCurrentNewRole1(), 
+    			theDatabase.getCurrentNewRole2());
     	
     	// See which home page dispatch to use
 		int numberOfRoles = theDatabase.getNumberOfRoles(user);		

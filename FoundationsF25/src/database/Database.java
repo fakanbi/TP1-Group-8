@@ -55,6 +55,8 @@ public class Database {
 	private String currentLastName;
 	private String currentPreferredFirstName;
 	private String currentEmailAddress;
+	private String currentDateOfBirth;
+	private String currentPhoneNumber;
 	private boolean currentAdminRole;
 	private boolean currentNewRole1;
 	private boolean currentNewRole2;
@@ -68,6 +70,10 @@ public class Database {
 	
 	public Database () {
 		
+	}
+	
+	public Connection getConnection() {
+		return connection;
 	}
 	
 	
@@ -112,6 +118,8 @@ public class Database {
 				+ "lastName VARCHAR (255), "
 				+ "preferredFirstName VARCHAR(255), "
 				+ "emailAddress VARCHAR(255), "
+				+ "dateOfBirth VARCHAR(255),"
+				+ "phoneNumber VARCHAR(255),"
 				+ "adminRole BOOL DEFAULT FALSE, "
 				+ "newRole1 BOOL DEFAULT FALSE, "
 				+ "newRole2 BOOL DEFAULT FALSE)";
@@ -181,40 +189,46 @@ public class Database {
  */
 	public void register(User user) throws SQLException {
 		String insertUser = "INSERT INTO userDB (userName, password, firstName, middleName, "
-				+ "lastName, preferredFirstName, emailAddress, adminRole, newRole1, newRole2) "
-				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		        + "lastName, preferredFirstName, emailAddress, adminRole, newRole1, newRole2, phoneNumber, dateOfBirth) "
+		        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try (PreparedStatement pstmt = connection.prepareStatement(insertUser)) {
-			currentUsername = user.getUserName();
-			pstmt.setString(1, currentUsername);
-			
-			currentPassword = user.getPassword();
-			pstmt.setString(2, currentPassword);
-			
-			currentFirstName = user.getFirstName();
-			pstmt.setString(3, currentFirstName);
-			
-			currentMiddleName = user.getMiddleName();			
-			pstmt.setString(4, currentMiddleName);
-			
-			currentLastName = user.getLastName();
-			pstmt.setString(5, currentLastName);
-			
-			currentPreferredFirstName = user.getPreferredFirstName();
-			pstmt.setString(6, currentPreferredFirstName);
-			
-			currentEmailAddress = user.getEmailAddress();
-			pstmt.setString(7, currentEmailAddress);
-			
-			currentAdminRole = user.getAdminRole();
-			pstmt.setBoolean(8, currentAdminRole);
-			
-			currentNewRole1 = user.getNewRole1();
-			pstmt.setBoolean(9, currentNewRole1);
-			
-			currentNewRole2 = user.getNewRole2();
-			pstmt.setBoolean(10, currentNewRole2);
-			
-			pstmt.executeUpdate();
+		    currentUsername = user.getUserName();
+		    pstmt.setString(1, currentUsername);
+		    
+		    currentPassword = user.getPassword();
+		    pstmt.setString(2, currentPassword);
+		    
+		    currentFirstName = user.getFirstName();
+		    pstmt.setString(3, currentFirstName);
+		    
+		    currentMiddleName = user.getMiddleName();			
+		    pstmt.setString(4, currentMiddleName);
+		    
+		    currentLastName = user.getLastName();
+		    pstmt.setString(5, currentLastName);
+		    
+		    currentPreferredFirstName = user.getPreferredFirstName();
+		    pstmt.setString(6, currentPreferredFirstName);
+		    
+		    currentEmailAddress = user.getEmailAddress();
+		    pstmt.setString(7, currentEmailAddress);
+		    
+		    currentAdminRole = user.getAdminRole();
+		    pstmt.setBoolean(8, currentAdminRole);
+		    
+		    currentNewRole1 = user.getNewRole1();
+		    pstmt.setBoolean(9, currentNewRole1);
+		    
+		    currentNewRole2 = user.getNewRole2();
+		    pstmt.setBoolean(10, currentNewRole2);
+		    
+		    currentPhoneNumber = user.getPhoneNumber();
+		    pstmt.setString(11, currentPhoneNumber);
+		    
+		    currentDateOfBirth = user.getDateOfBirth();
+		    pstmt.setString(12, currentDateOfBirth);
+		    
+		    pstmt.executeUpdate();
 		}
 		
 	}
@@ -239,7 +253,6 @@ public class Database {
 		} catch (SQLException e) {
 	        return null;
 	    }
-//		System.out.println(userList);
 		return userList;
 	}
 
@@ -389,7 +402,8 @@ public class Database {
 	 */
 	// Generates a new invitation code and inserts it into the database.
 	public String generateInvitationCode(String emailAddress, String role) {
-	    String code = UUID.randomUUID().toString().substring(0, 6); // Generate a random 6-character code
+		// Generate a random 6-character code
+	    String code = UUID.randomUUID().toString().substring(0, 6); 
 	    String query = "INSERT INTO InvitationCodes (code, emailaddress, role) VALUES (?, ?, ?)";
 
 	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -559,7 +573,7 @@ public class Database {
 	        ResultSet rs = pstmt.executeQuery();
 	        
 	        if (rs.next()) {
-	            return rs.getString("firstName"); // Return the first name if user exists
+	            return rs.getString("firstName"); 
 	        }
 			
 	    } catch (SQLException e) {
@@ -612,7 +626,7 @@ public class Database {
 	        ResultSet rs = pstmt.executeQuery();
 	        
 	        if (rs.next()) {
-	            return rs.getString("middleName"); // Return the middle name if user exists
+	            return rs.getString("middleName");
 	        }
 	    } catch (SQLException e) {
 	        e.printStackTrace();
@@ -656,7 +670,7 @@ public class Database {
 	 * @return the last name of a user given that user's username 
 	 *  
 	 */
-	// get he last name
+	// get the last name
 	public String getLastName(String username) {
 		String query = "SELECT LastName FROM userDB WHERE userName = ?";
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -664,7 +678,7 @@ public class Database {
 	        ResultSet rs = pstmt.executeQuery();
 	        
 	        if (rs.next()) {
-	            return rs.getString("lastName"); // Return last name role if user exists
+	            return rs.getString("lastName"); 
 	        }
 	    } catch (SQLException e) {
 	        e.printStackTrace();
@@ -716,7 +730,7 @@ public class Database {
 	        ResultSet rs = pstmt.executeQuery();
 	        
 	        if (rs.next()) {
-	            return rs.getString("firstName"); // Return the preferred first name if user exists
+	            return rs.getString("firstName"); 
 	        }
 			
 	    } catch (SQLException e) {
@@ -769,7 +783,8 @@ public class Database {
 	        ResultSet rs = pstmt.executeQuery();
 	        
 	        if (rs.next()) {
-	            return rs.getString("emailAddress"); // Return the email address if user exists
+	        	// Return the email address if user exists
+	            return rs.getString("emailAddress"); 
 	        }
 			
 	    } catch (SQLException e) {
@@ -803,6 +818,106 @@ public class Database {
 	    }
 	}
 	
+	/*******
+	 * <p> Method: String getDateOfBirth(String username) </p>
+	 * 
+	 * <p> Description: Get the date of birth of a user given that user's username.</p>
+	 * 
+	 * @param username is the username of the user
+	 * 
+	 * @return the date of birth of a user given that user's username 
+	 *  
+	 */
+	// get the date of birth
+	public String getDateOfBirth(String username) {
+		String query = "SELECT dateOfBirth FROM userDB WHERE userName = ?";
+		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+			pstmt.setString(1, username);
+	        ResultSet rs = pstmt.executeQuery();
+	        
+	        if (rs.next()) {
+	            return rs.getString("dateOfBirth"); 
+	        }
+			
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+		return null;
+	}
+	
+
+	/*******
+	 * <p> Method: void updateFirstName(String username, String dob) </p>
+	 * 
+	 * <p> Description: Update the date of birth of a user given that user's username and the date of birth.</p>
+	 * 
+	 * @param username is the username of the user
+	 * 
+	 * @param dateOfBirth is the new date of birth for the user
+	 *  
+	 */
+	// update the date of birth
+	public void updateDateOfBirth(String username, String dateOfBirth) {
+	    String query = "UPDATE userDB SET dateOfBirth = ? WHERE username = ?"; 
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, dateOfBirth);
+	        pstmt.setString(2, username);
+	        pstmt.executeUpdate();
+	        currentDateOfBirth = dateOfBirth; 
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+
+	/*******
+	 * <p> Method: String getPhoneNumber(String username) </p>
+	 * 
+	 * <p> Description: Get the phone number of a user given that user's username.</p>
+	 * 
+	 * @param username is the username of the user
+	 * 
+	 * @return the phone number of a user given that user's username 
+	 *  
+	 */
+	// get the user phone number
+	public String getPhoneNumber(String username) {
+	    String query = "SELECT phoneNumber FROM userDB WHERE userName = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, username);
+	        ResultSet rs = pstmt.executeQuery();
+	        
+	        if (rs.next()) {
+	            return rs.getString("phoneNumber");
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return null;
+	}
+	
+	/*******
+	 * <p> Method: void updatePhoneNumber(String username, String phoneNumber) </p>
+	 * 
+	 * <p> Description: Update the phone number of a user given that user's username and
+	 * 		the new phone number.</p>
+	 * 
+	 * @param username is the username of the user
+	 *  
+	 * @param phoneNumber is the new phone number for the user
+	 *  
+	 */
+	// update a users phone number 
+	public void updatePhoneNumber(String username, String phoneNumber) {
+	    String query = "UPDATE userDB SET phoneNumber = ? WHERE username = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, phoneNumber);
+	        pstmt.setString(2, username);
+	        pstmt.executeUpdate();
+	        currentPhoneNumber = phoneNumber;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
 	
 	/*******
 	 * <p> Method: boolean getUserAccountDetails(String username) </p>
@@ -814,23 +929,26 @@ public class Database {
 	 * @return true of the get is successful, else false
 	 *  
 	 */
-	// get the attributes for a specified user
+	// get all the user account details
 	public boolean getUserAccountDetails(String username) {
 		String query = "SELECT * FROM userDB WHERE username = ?";
 		try (PreparedStatement pstmt = connection.prepareStatement(query)) {
 			pstmt.setString(1, username);
 	        ResultSet rs = pstmt.executeQuery();			
 			rs.next();
-	    	currentUsername = rs.getString(2);
-	    	currentPassword = rs.getString(3);
-	    	currentFirstName = rs.getString(4);
-	    	currentMiddleName = rs.getString(5);
-	    	currentLastName = rs.getString(6);
-	    	currentPreferredFirstName = rs.getString(7);
-	    	currentEmailAddress = rs.getString(8);
-	    	currentAdminRole = rs.getBoolean(9);
-	    	currentNewRole1 = rs.getBoolean(10);
-	    	currentNewRole2 = rs.getBoolean(11);
+	        currentUsername = rs.getString(2);  
+	        currentPassword = rs.getString(3);    
+	        currentFirstName = rs.getString(4);     
+	        currentMiddleName = rs.getString(5);    
+	        currentLastName = rs.getString(6);      
+	        currentPreferredFirstName = rs.getString(7); 
+	        currentEmailAddress = rs.getString(8); 
+	        currentDateOfBirth = rs.getString(9);   
+	        currentPhoneNumber = rs.getString(10);  
+	        currentAdminRole = rs.getBoolean(11);   
+	        currentNewRole1 = rs.getBoolean(12);    
+	        currentNewRole2 = rs.getBoolean(13);   
+
 			return true;
 	    } catch (SQLException e) {
 			return false;
@@ -853,7 +971,7 @@ public class Database {
 	 * @return true if the update was successful, else false
 	 *  
 	 */
-	// Update a users role
+	// update a user role
 	public boolean updateUserRole(String username, String role, String value) {
 		if (role.compareTo("Admin") == 0) {
 			String query = "UPDATE userDB SET adminRole = ? WHERE username = ?";
@@ -901,6 +1019,70 @@ public class Database {
 			}
 		}
 		return false;
+	}
+	
+	/*******
+	 * <p> Method: void updatePassword(String username, String password) </p>
+	 * 
+	 * <p> Description: Update the password of a user given that user's username and
+	 * 		the new password.</p>
+	 * 
+	 * @param username is the username of the user
+	 *  
+	 * @param password is the new password for the user
+	 *  
+	 */
+	// update the users password
+	public void updatePassword(String username, String password) {
+	    String query = "UPDATE userDB SET password = ? WHERE userName = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, password);
+	        pstmt.setString(2, username);
+	        pstmt.executeUpdate();
+	        currentPassword = password;
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+	
+	/*******
+	 * <p> Method: boolean setUserOneTimePassword(String username, String oneTimePassword) </p>
+	 * 
+	 * <p> Description: Update a user's password to a one-time password.</p>
+	 * 
+	 * @param username the username to update
+	 * @param oneTimePassword the new temporary password
+	 * @return true if successful, false otherwise
+	 * @throws SQLException if database error occurs
+	 */
+	// set a one time password for a user
+	public boolean setUserOneTimePassword(String username, String oneTimePassword) throws SQLException {
+	    String query = "UPDATE userDB SET password = ? WHERE userName = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, oneTimePassword);
+	        pstmt.setString(2, username);
+	        int rowsAffected = pstmt.executeUpdate();
+	        return rowsAffected > 0;
+	    }
+	}
+	
+	/*******
+	 * <p> Method: boolean deleteUser(String username) </p>
+	 * 
+	 * <p> Description: Delete a user from the database.</p>
+	 * 
+	 * @param username the username to delete
+	 * @return true if successful, false otherwise
+	 * @throws SQLException if database error occurs
+	 */
+	// deletes a user and all user information
+	public boolean deleteUser(String username) throws SQLException {
+	    String query = "DELETE FROM userDB WHERE userName = ?";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        pstmt.setString(1, username);
+	        int rowsAffected = pstmt.executeUpdate();
+	        return rowsAffected > 0;
+	    }
 	}
 	
 	
@@ -981,6 +1163,25 @@ public class Database {
 	 */
 	public String getCurrentEmailAddress() { return currentEmailAddress;};
 
+	/*******
+	 * <p> Method: String getCurrentPhoneNumber() </p>
+	 * 
+	 * <p> Description: Get the current user's phone number.</p>
+	 * 
+	 * @return the phone number value is returned
+	 *  
+	 */
+	public String getPhoneNumber() { return currentPhoneNumber;}
+
+	/*******
+	 * <p> Method: String getCurrentDateOfBirth() </p>
+	 * 
+	 * <p> Description: Get the current user's date of birth.</p>
+	 * 
+	 * @return the date of birth value is returned
+	 *  
+	 */
+	public String getDateOfBirth() { return currentDateOfBirth;}
 	
 	/*******
 	 * <p> Method: boolean getCurrentAdminRole() </p>
@@ -1016,6 +1217,41 @@ public class Database {
 
 	
 	/*******
+	 * <p> Method: List<User> getAllUsers() </p>
+	 * 
+	 * <p> Description: Get a list of all User objects from the database.</p>
+	 * 
+	 * @return List of all User objects
+	 * @throws SQLException if database error occurs
+	 */
+	// creates a list of all the current user 
+	public List<User> getAllUsers() throws SQLException {
+	    List<User> users = new ArrayList<>();
+	    String query = "SELECT * FROM userDB";
+	    try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+	        ResultSet rs = pstmt.executeQuery();
+	        while (rs.next()) {
+	            User user = new User(
+	                rs.getString("userName"),
+	                rs.getString("password"),
+	                rs.getString("firstName"),
+	                rs.getString("middleName"),
+	                rs.getString("lastName"),
+	                rs.getString("preferredFirstName"),
+	                rs.getString("emailAddress"),
+	                rs.getString("dateOfBirth"),
+	                rs.getString("phoneNumber"),
+	                rs.getBoolean("adminRole"),
+	                rs.getBoolean("newRole1"),
+	                rs.getBoolean("newRole2")
+	            );
+	            users.add(user);
+	        }
+	    }
+	    return users;
+	}
+	
+	/*******
 	 * <p> Debugging method</p>
 	 * 
 	 * <p> Description: Debugging method that dumps the database of the console.</p>
@@ -1039,7 +1275,8 @@ public class Database {
 		resultSet.close();
 	}
 
-
+	
+	
 	/*******
 	 * <p> Method: void closeConnection()</p>
 	 * 

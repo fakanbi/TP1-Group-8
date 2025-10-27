@@ -7,6 +7,7 @@ import guiNewAccount.ControllerNewAccount;
 import guiFirstAdmin.ModelFirstAdmin;
 import Validation.UserNameRecognizer;
 import javafx.stage.Stage;
+import java.time.LocalDate;
 
 public class ControllerFirstAdmin {
 	/*-********************************************************************************************
@@ -21,7 +22,9 @@ public class ControllerFirstAdmin {
 	
 	private static String adminUsername = "";
 	private static String adminPassword1 = "";
-	private static String adminPassword2 = "";		
+	private static String adminPassword2 = "";	
+	private static String dateOfBirth = "";
+	private static String phoneNumber = "";
 	protected static Database theDatabase = applicationMain.FoundationsMain.database;		
 
 	/*-********************************************************************************************
@@ -67,7 +70,31 @@ public class ControllerFirstAdmin {
 		adminPassword2 = ViewFirstAdmin.text_AdminPassword2.getText();		
 		ViewFirstAdmin.label_PasswordsDoNotMatch.setText("");
 	}
-	
+	/**********
+	 * <p> Method: setAdminDOB() </p>
+	 * 
+	 * <p> Description: This method is called when the user adds a date to the date of birth field in
+	 * the View.  A private local copy of what was last entered is kept here.</p>
+	 * 
+	 */
+	protected static void setAdminDOB() {
+	    LocalDate date = ViewFirstAdmin.datePicker_DOB.getValue();
+	    if (date != null) {
+	    	dateOfBirth = date.toString();
+	    } else {
+	    	dateOfBirth = null;
+	    }
+	}
+	/**********
+	 * <p> Method: setAdminPhoneNumber() </p>
+	 * 
+	 * <p> Description: This method is called when the user adds a phone number to the phone number field in
+	 * the View.  A private local copy of what was last entered is kept here.</p>
+	 * 
+	 */
+	protected static void setAdminPhoneNumber() {
+	    phoneNumber = ViewFirstAdmin.text_PhoneNumber.getText();
+	}
 	
 	/**********
 	 * <p> Method: doSetupAdmin() </p>
@@ -136,18 +163,56 @@ public class ControllerFirstAdmin {
             return;
         }
         
+     // Validate date of birth
+        if (dateOfBirth == null || dateOfBirth.trim().isEmpty()) {
+            ControllerNewAccount.alertUsernamePasswordError.setTitle("Date of Birth Required!");
+            ControllerNewAccount.alertUsernamePasswordError.setHeaderText(null);
+            ControllerNewAccount.alertUsernamePasswordError.setContentText("Please select your date of birth.");
+            ControllerNewAccount.alertUsernamePasswordError.showAndWait();
+            return;
+        }
+
+        // Uses the current date to validate the user is at least 13
+        try {
+            LocalDate dob = LocalDate.parse(dateOfBirth);
+            LocalDate today = LocalDate.now();
+            LocalDate minAgeDate = today.minusYears(13);
+            
+            if (dob.isAfter(minAgeDate)) {
+                ControllerNewAccount.alertUsernamePasswordError.setTitle("Age Restriction!");
+                ControllerNewAccount.alertUsernamePasswordError.setHeaderText(null);
+                ControllerNewAccount.alertUsernamePasswordError.setContentText("You must be at least 13 years old to create an account.");
+                ControllerNewAccount.alertUsernamePasswordError.showAndWait();
+                return;
+            }
+        } catch (Exception e) {
+            ControllerNewAccount.alertUsernamePasswordError.setTitle("Invalid Date!");
+            ControllerNewAccount.alertUsernamePasswordError.setHeaderText(null);
+            ControllerNewAccount.alertUsernamePasswordError.setContentText("Please select a valid date of birth.");
+            ControllerNewAccount.alertUsernamePasswordError.showAndWait();
+            return;
+        }
+        
+     // Validate phone number format. It is optional field, but if it is provided it must be correct format
+        if (phoneNumber != null && !phoneNumber.trim().isEmpty() && !validatePhoneNumber(phoneNumber)) {
+            ControllerNewAccount.alertUsernamePasswordError.setTitle("Invalid Phone Number Format!");
+            ControllerNewAccount.alertUsernamePasswordError.setHeaderText(null);
+            ControllerNewAccount.alertUsernamePasswordError.setContentText("Phone number must be in the format: xxx-xxx-xxxx\nExample: 123-456-7890\nOr leave the field empty.");
+            ControllerNewAccount.alertUsernamePasswordError.showAndWait();
+            return;
+        }
+        
 		// Make sure the two passwords are the same
-		if (adminPassword1.compareTo(adminPassword2) == 0) {
-        	// Create the passwords and proceed to the user home page
-        	User user = new User(adminUsername, adminPassword1, "", "", "", "", "", true, false, 
-        			false);
+        if (adminPassword1.compareTo(adminPassword2) == 0) {
+            // Create the passwords and proceed to the user home page
+        	User user = new User(adminUsername, adminPassword1, "", "", "", "", "", dateOfBirth, phoneNumber, true, false, false); 
             try {
-            	// Create a new User object with admin role and register in the database
-            	theDatabase.register(user);
-            	}
+                // Create a new User object with admin role and register in the database
+                theDatabase.register(user);
+            }
             catch (SQLException e) {
                 System.err.println("*** ERROR *** Database error trying to register a user: " + 
-                		e.getMessage());
+                        e.getMessage());
                 e.printStackTrace();
                 System.exit(0);
             }
@@ -165,6 +230,24 @@ public class ControllerFirstAdmin {
 		}
 	}
 	
+	/**********
+	 * <p> Method: validatePhoneNumber() </p>
+	 * 
+	 * <p> Description: This method validates that the phone number is in the format xxx-xxx-xxxx
+	 * where x represents a digit from 0-9. If no phone number is provided, it returns true.</p>
+	 * 
+	 * @param phoneNumber The phone number string to validate
+	 * @return boolean true if valid format or empty, false otherwise
+	 */
+	protected static boolean validatePhoneNumber(String phoneNumber) {
+	    if (phoneNumber == null || phoneNumber.trim().isEmpty()) {
+	        return true; // Phone number is optional, so empty is valid
+	    }
+	    
+	    // Checks the for the format for xxx-xxx-xxxx 
+	    String phoneRegex = "^\\d{3}-\\d{3}-\\d{4}$";
+	    return phoneNumber.matches(phoneRegex);
+	}
 	
 	/**********
 	 * <p> Method: performQuit() </p>
